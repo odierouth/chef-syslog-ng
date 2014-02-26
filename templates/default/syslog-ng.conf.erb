@@ -1,0 +1,79 @@
+# This file is managed by Chef
+# Local changes will be overwritten
+#
+#############################################################################
+# Default syslog-ng.conf file which collects all local logs into a
+# single file called /var/log/messages.
+#
+
+@version: 3.3
+@include "scl.conf"
+
+options {
+  use_dns (no);
+  use_fqdn (no);
+  log_fifo_size (30000);
+};
+
+rewrite r_host { set("<%= @host_name %>", value("HOST")); };
+
+rewrite r_env { set("<%= @env_name %>", value(".SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.env")); };
+rewrite r_app { set("<%= @app_name %>", value(".SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.app")); };
+
+source s_local {
+	system();
+  internal();
+  udp(ip(127.0.0.1) port(514));
+};
+
+filter f_sys_central {
+	facility(kern,user,daemon,auth,authpriv,syslog,cron,local0,local1,local7) and not level(debug);
+};
+
+filter f_local_messages {
+	facility(kern,daemon,syslog,cron) and not level(debug);
+};
+
+destination d_local {
+	file("/var/log/syslog");
+};
+
+destination d_local_msg {
+	file("/var/log/messages");
+};
+
+<% unless @node[:syslog_ng][:port_private].empty? -%>
+destination d_net {
+syslog("<%= @syslog_ng[:log_host] %>" port(<%= @syslog_ng[:port_private] %>) <% if @node[:syslog_ng][:use_tls] -%>transport(tls) tls(ca_dir("<%= @syslog_ng[:config_dir] %>/cert.d"))<% end -%> );
+};
+<% end -%>
+
+<% unless @node[:syslog_ng][:port_public].empty? -%>
+destination d_inet {
+syslog("<%= @syslog_ng[:log_host] %>" port(<%= @syslog_ng[:port_public] %>) <% if @node[:syslog_ng][:use_tls] -%>transport(tls) tls(ca_dir("<%= @syslog_ng[:config_dir] %>/cert.d"))<% end -%> );
+};
+<% end -%>
+
+include "<%= @syslog_ng[:config_dir] %>/conf.d/";
+
+log {
+	source(s_local);
+	filter(f_sys_central);
+	rewrite(r_host);
+	rewrite(r_env);
+	rewrite(r_app);
+  <%= "destination(d_net);" unless @node[:syslog_ng][:port_private].empty? %>
+  <%= "destination(d_inet);" unless @node[:syslog_ng][:port_public].empty? %>
+};
+
+log {
+	source(s_local);
+	filter(f_local_messages);
+	destination(d_local_msg);
+};
+
+log {
+	source(s_local);
+	destination(d_local);
+	flags(fallback);
+};

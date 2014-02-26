@@ -1,0 +1,5 @@
+#syslog-ng private network port
+-A FWR -p tcp -m tcp -m state --state NEW --dport <%= @node[:syslog_ng][:port_private] %> -j ACCEPT -m comment --comment "Syslog-ng TLS private network port"
+
+#syslog-ng public network port
+-A FWR -p tcp -m tcp -m state --state NEW --dport <%= @node[:syslog_ng][:port_public] %> -j ACCEPT -m comment --comment "Syslog-ng TLS public network port"

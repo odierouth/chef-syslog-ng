@@ -1,0 +1,81 @@
+#############################################################################
+# syslog-ng config file created by CHEF
+# 
+# WARNING: changes to this file will be overwritten.
+#
+# Server side version of config receiving packets from entire infrastructure
+# logs are stored based on meta data recieved in STRUCTURED DATA 
+# 2 categories exist:
+#   * Analysed applicaton logs for indexing with log anal tool
+#   * Host level logs for machine specific logs to be stored
+#
+
+@version: 3.3
+@include "scl.conf"
+
+options {
+        use_dns(no);
+        use_fqdn(no);
+        keep_hostname(yes);
+        ts_format(iso);
+};
+
+source s_local {
+        system();
+        internal();
+};
+
+<% unless @node[:syslog_ng][:port_private].empty? -%>
+source s_local_net {
+syslog(ip(<%= @node['ipaddress'] %>) port(<%= @node[:syslog_ng][:port_private] %>) max-connections(300) <% if @node[:syslog_ng][:use_tls] -%>transport(tls) tls(peer-verify('optional-untrusted') key_file("<%= @node[:syslog_ng][:config_dir] %>/key.d/logserver.pem") cert_file('<%= @node[:syslog_ng][:config_dir] %>/cert.d/logserver_cert.pem')) <% end -%>);
+};
+<% end -%>
+
+<% unless @node[:syslog_ng][:port_public].empty? -%>
+source s_inet {
+syslog(ip(<%= @node['ipaddress'] %>) port(<%= @node[:syslog_ng][:port_public] %>) max-connections(300) <% if @node[:syslog_ng][:use_tls] -%>transport(tls) tls(peer-verify('optional-untrusted') key_file('<%= @node[:syslog_ng][:config_dir] %>/key.d/logserver_inet.pem') cert_file('<%= @node[:syslog_ng][:config_dir] %>/cert.d/logserver_inet_cert.pem')) <% end -%>);
+};
+<% end -%>
+
+filter f_remote_app {
+        facility(local0,local1,local7);
+};
+
+filter f_remote_systems {
+        facility(kern,user,daemon,auth,authpriv,syslog,cron);
+};
+
+destination d_local {
+    file("<%= @node[:syslog_ng][:server_log_path] %>/syslog-ng/messages_local");
+};
+
+destination d_prog {
+file("<%= @node[:syslog_ng][:server_log_path] %>/syslog-ng/analyze/${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.app}/${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.env}/$HOST/$PROGRAM.log"
+        template("$ISODATE $HOST-$SOURCEIP ${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.app} ${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.env} $PROGRAM $LEVEL $MSG\n")
+        log_fifo_size(60000) create_dirs(yes) dir_group('logstash') dir_perm(0750) group('logstash') perm(0640));
+};
+
+destination d_host {
+    file("<%= @node[:syslog_ng][:server_log_path] %>/syslog-ng/hosts/$HOST/$FACILITY.log"
+        template("$ISODATE $HOST-$SOURCEIP ${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.app} ${.SDATA.<%= @node[:syslog_ng][:meta_data_context] %>.env} $PROGRAM $LEVEL $MSG\n")
+        log_fifo_size(60000) create_dirs(yes));
+};
+
+log {
+      <%= "source(s_local_net);" unless @node[:syslog_ng][:port_private].empty? %>
+      <%= "source(s_inet);" unless @node[:syslog_ng][:port_public].empty? %>
+      filter(f_remote_app);
+      destination(d_prog);
+};
+
+log {
+      <%= "source(s_local_net);" unless @node[:syslog_ng][:port_private].empty? %>
+      <%= "source(s_inet);" unless @node[:syslog_ng][:port_public].empty? %>
+      filter(f_remote_systems);
+      destination(d_host);
+};
+
+log {
+    source(s_local);
+    destination(d_local);
+};
