@@ -11,13 +11,13 @@ Only tested on CentOS and RedHat Enterprise Linux. Additional platform support i
 
 #### cookbooks
 - `discovery` - Cookbook to support locating logging server dynamically as clients are added
-- `ssl` (optional) - SSL cookbook to provide certificate management and signing via private CA. ssl cookbook used can be found on [github](https://github.com/VendaTech/chef-cookbook-ssl/tree/7429a77c3049029ec8ced768299c429fa2b715cc) -- Note: cookbook has since changed name to `x509`. This cookbook will need some refactoring to support new version.
+- `x509` (optional) - SSL cookbook to provide certificate management and signing via private CA. ssl cookbook used can be found on [github](https://github.com/VendaTech/chef-cookbook-ssl)
 
 Attributes
 ----------
 #### configuration options
 - `node[:syslog_ng][:meta_data_context]` - This is the SDATA context used within syslog-ng messages to send meta data with an event for storage organization and indexing assistance.  Default value is 'default'
-- `node[:syslog_ng][:use_tls]` - Flag to utilize TLS connections for remote logging. Setting 'true' will require ssl cookbook mentioned above.
+- `node[:syslog_ng][:use_tls]` - Flag to utilize TLS connections for remote logging. Setting 'true' will require x509 cookbook mentioned above.
 - `node[:syslog_ng][:disable_other_syslog]` - Flag to disable other running syslog applications if needed. Default is 'false'
 - `node[:syslog_ng][:port_public]` - Port to be used for connections across public networks when public IP is needed. If left blank, no port will be set for listening.
 - `node[:syslog_ng][:port_private]` - Port to be used for connections on private network. If left blank, no port will be set for listening.
@@ -56,7 +56,9 @@ end
 - facility:  default syslog facility used for this logging source
 
 #### Using TLS for logging
-When setting `node[:syslog_ng][:use_tls] = true` ssl cookbook is used to create certificates for the central logging server. CA Certificate is distributed to all client hosts for trust. More specific detail can be found [here](https://github.com/VendaTech/chef-cookbook-ssl#signing-client) about workflow and signing certs.
-Using TLS requires setting at least one of the following attributes:
+When setting `node[:syslog_ng][:use_tls] = true` x509 cookbook is used to create certificates for the central logging server. CA Certificate is distributed to all client hosts for trust. More specific detail can be found [here](https://github.com/VendaTech/chef-cookbook-ssl#signing-client) about workflow and signing certs.
+Using TLS requires setting at least one of the following attributes to build certs for the interfaces:
 - `node[:syslog_ng][:port_public]`
 - `node[:syslog_ng][:port_private]`
+CA name used for CA in certificates data bag is specified in attribute:
+- `node[:syslog_ng][:ca_name]`

@@ -9,9 +9,9 @@ end
 include_recipe "syslog-ng::default"
 
 if node[:syslog_ng][:use_tls] == true
-  include_recipe "ssl"
+  include_recipe "x509"
 
-  ssl_ca_certificate "DevOps CA" do
+  x509_ca_certificate node[:syslog_ng][:ca_name] do
     cacertificate "#{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem"
   end
 

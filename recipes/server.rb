@@ -22,19 +22,19 @@ if node[:syslog_ng][:use_tls]
   # syslog-ng requires that CN of certificates be the fqdn or IP address of server
   # Separate certificate is needed for local IP and for public IP for each kind of
   #  connection to the logging server.
-  include_recipe "ssl"
+  include_recipe "x509"
 
   #establish private network certificate
-  ssl_certificate "#{node['cloud']['local_ipv4']}" do
-    ca "DevOps CA"
+  x509_certificate "#{node['cloud']['local_ipv4']}" do
+    ca node[:syslog_ng][:ca_name]
     key "#{node[:syslog_ng][:config_dir]}/key.d/logserver.pem"
     certificate "#{node[:syslog_ng][:config_dir]}/cert.d/logserver_cert.pem"
     cacertificate "#{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem"
   end
 
   #establish public network certificate
-  ssl_certificate "#{node['cloud']['public_ipv4']}" do
-    ca "DevOps CA"
+  x509_certificate "#{node['cloud']['public_ipv4']}" do
+    ca node[:syslog_ng][:ca_name]
     key "#{node[:syslog_ng][:config_dir]}/key.d/logserver_inet.pem"
     certificate "#{node[:syslog_ng][:config_dir]}/cert.d/logserver_inet_cert.pem"
     cacertificate "#{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem"
