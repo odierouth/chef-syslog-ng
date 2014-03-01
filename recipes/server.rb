@@ -4,6 +4,11 @@ node.override[:syslog_ng][:role] = "server"
 
 include_recipe "syslog-ng::default"
 
+directory node[:syslog_ng][:server_log_path] do
+  owner node[:syslog_ng][:user]
+  group node[:syslog_ng][:group]
+end
+
 if node[:syslog_ng][:use_tls]
 
   #Create directory to hold private keys for TLS certs

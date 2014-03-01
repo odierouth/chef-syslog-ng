@@ -1,8 +1,10 @@
-syslog_server = Discovery.search("logging_server", :node => node)
+unless Chef::Config[:solo]
+  syslog_server = Discovery.search("logging_server", :node => node)
 
-ip_address = Discovery.ipaddress(:remote_node => syslog_server, :node => node)
+  ip_address = Discovery.ipaddress(:remote_node => syslog_server, :node => node)
 
-node.set[:syslog_ng][:log_host] = ip_address
+  node.set[:syslog_ng][:log_host] = ip_address
+end
 
 include_recipe "syslog-ng::default"
 

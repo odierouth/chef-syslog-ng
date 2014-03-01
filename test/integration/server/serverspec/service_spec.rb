@@ -22,8 +22,8 @@ describe 'syslog-ng server' do
     expect(file(conf_file)).to be_file
     expect(file(conf_file)).to be_mode(640)
     expect(file(conf_file)).to be_owned_by('root')
-    expect(file(conf_file).content).to match(/syslog\(ip\(127\.0\.0\.1\) port\(1028\)/)
-    expect(file(conf_file).content).to match(/syslog\(ip\(127\.0\.0\.1\) port\(1029\)/)
+    expect(file(conf_file).content).to match(/port\(1028\)/)
+    expect(file(conf_file).content).to match(/port\(1029\)/)
   end
 
   it "has log storage directory" do
