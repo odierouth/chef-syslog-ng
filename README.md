@@ -18,7 +18,6 @@ Attributes
 #### configuration options
 - `node[:syslog_ng][:meta_data_context]` - This is the SDATA context used within syslog-ng messages to send meta data with an event for storage organization and indexing assistance.  Default value is 'default'
 - `node[:syslog_ng][:use_tls]` - Flag to utilize TLS connections for remote logging. Setting 'true' will require x509 cookbook mentioned above.
-- `node[:syslog_ng][:disable_other_syslog]` - Flag to disable other running syslog applications if needed. Default is 'false'
 - `node[:syslog_ng][:port_public]` - Port to be used for connections across public networks when public IP is needed. If left blank, no port will be set for listening.
 - `node[:syslog_ng][:port_private]` - Port to be used for connections on private network. If left blank, no port will be set for listening.
 

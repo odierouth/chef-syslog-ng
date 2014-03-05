@@ -28,18 +28,6 @@ template "#{node[:syslog_ng][:config_dir]}/scl.conf" do
   mode 00640
 end
 
-if node[:syslog_ng][:disable_other_syslog] == true
-  #disable default EY syslog app
-  service "sysklogd" do
-    action [ :disable, :stop ]
-  end
-
-  #disable default EY syslog app
-  service "rsyslog" do
-    action [ :disable, :stop ]
-  end
-end
-
 #start syslog-ng with config
 service "syslog-ng" do
   supports :restart => true, :status => true

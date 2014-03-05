@@ -8,7 +8,6 @@ default[:syslog_ng][:meta_data_context] = 'default'
 default[:syslog_ng][:use_tls] = true
 default[:syslog_ng][:ca_name] = ''
 default[:syslog_ng][:cacert_hash] = ''
-default[:syslog_ng][:disable_other_syslog] = false
 
 # connection info for log server
 default[:syslog_ng][:log_host] = '127.0.0.1'
