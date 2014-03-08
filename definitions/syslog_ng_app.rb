@@ -27,6 +27,6 @@ define :syslog_ng_app, :template => "syslog_ng_app.erb" do
       :params => params
     )
 
-    notifies :restart, resources(:service => "syslog-ng")
+    notifies :restart, "service['syslog-ng']"
   end
 end

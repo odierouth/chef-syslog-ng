@@ -25,7 +25,7 @@ if node[:syslog_ng][:use_tls]
   include_recipe "x509"
 
   #establish private network certificate
-  x509_certificate "#{node['cloud']['local_ipv4']}" do
+  x509_certificate node['cloud']['local_ipv4'] do
     ca node[:syslog_ng][:ca_name]
     key "#{node[:syslog_ng][:config_dir]}/key.d/logserver.pem"
     certificate "#{node[:syslog_ng][:config_dir]}/cert.d/logserver_cert.pem"
@@ -33,7 +33,7 @@ if node[:syslog_ng][:use_tls]
   end
 
   #establish public network certificate
-  x509_certificate "#{node['cloud']['public_ipv4']}" do
+  x509_certificate node['cloud']['public_ipv4'] do
     ca node[:syslog_ng][:ca_name]
     key "#{node[:syslog_ng][:config_dir]}/key.d/logserver_inet.pem"
     certificate "#{node[:syslog_ng][:config_dir]}/cert.d/logserver_inet_cert.pem"

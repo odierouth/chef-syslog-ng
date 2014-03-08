@@ -17,10 +17,13 @@ if node[:syslog_ng][:use_tls] == true
 
   ruby_block "establish_cacert_hash" do
     block do
-      cacert_hash = `/usr/bin/openssl x509 -noout -hash -in #{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem`
+      sslhash = Mixlib::ShellOut.new("/usr/bin/openssl x509 -noout -hash -in #{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem")
+      sslhash.run_command
+      cacert_hash = sslhash.stdout
       if cacert_hash.chomp != node[:syslog_ng][:cacert_hash]
         node.set[:syslog_ng][:cacert_hash] = cacert_hash.chomp
-        `ln -s #{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem #{node[:syslog_ng][:config_dir]}/cert.d/#{node[:syslog_ng][:cacert_hash]}.0`
+        lnhash = MixLib::ShellOut.new("ln -s #{node[:syslog_ng][:config_dir]}/cert.d/cacert.pem #{node[:syslog_ng][:config_dir]}/cert.d/#{node[:syslog_ng][:cacert_hash]}.0")
+        lnhash.run_command
         Chef::Log.info("cacert link created to filename: #{node[:syslog_ng][:cacert_hash]}.0")
       end
     end
